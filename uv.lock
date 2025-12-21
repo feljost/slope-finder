@@ -303,7 +303,7 @@ wheels = [
 ]
 
 [[package]]
-name = "slope-check-backend"
+name = "slope-finder-backend"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

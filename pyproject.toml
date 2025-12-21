@@ -18,9 +18,6 @@ authors = [
 ]
 
 
-[project.scripts]
-slope-finder-backend = "slope_finder_backend:main"
-
 [project.urls]
 Homepage = "https://github.com/feljost/slope-finder-backend"
 Repository = "https://github.com/feljost/slope-finder-backend"
