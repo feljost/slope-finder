@@ -15,15 +15,15 @@ class SnowReport(BaseModel):
 
 class WeatherPeriod(BaseModel):
     time: str
-    temperature_celsius: float
-    precipitation_mm: float
-    snowfall_cm: float
-    cloud_cover_percent: int
-    visibility_m: float
+    temperature_celsius: float | None
+    precipitation_mm: float | None
+    snowfall_cm: float | None
+    cloud_cover_percent: int | None
+    visibility_m: float | None
 
 
 class WeatherData(BaseModel):
-    snowfall_prev_24h_cm: float
+    snowfall_prev_24h_cm: float | None
     morning: WeatherPeriod
     midday: WeatherPeriod
     afternoon: WeatherPeriod
@@ -44,8 +44,8 @@ class SkiResort(BaseModel):
     snowreport_url: str
     image_url: str
     air_distance_km: float
-    distance_km: float
-    duration_minutes: float
+    distance_km: float | None
+    duration_minutes: float | None
     snow_report: SnowReport
     weather: WeatherData
 
