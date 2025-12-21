@@ -347,7 +347,7 @@ ski_resorts = [
         "location": {"lat": 46.8167, "lng": 8.0333},
         "elevation": "1166m - 2350m",
         "snowreport_url": "https://www.skiresort.info/ski-resort/soerenberg-rothorndorf/snow-report/",
-        "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Soerenberg.jpg"
+        "image_url": "https://www.soerenberg.ch/fileadmin/_processed_/0/a/csm_skigebiet-eisee-brienzer-rothorn-soerenberg-yorick-leusink-4_f68693f231.jpg"
     },
     # Eastern Switzerland
     {
