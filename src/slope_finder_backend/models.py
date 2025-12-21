@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import date as date_type
 
 class Location(BaseModel):
     lat: float
@@ -31,3 +32,26 @@ class SkiResortsResponse(BaseModel):
     total_resorts: int
     has_more: bool
     resorts: list[SkiResort]
+
+
+class WeatherPeriod(BaseModel):
+    time: str
+    temperature_celsius: float
+    precipitation_mm: float
+    snowfall_cm: float
+    cloud_cover_percent: int
+    visibility_m: float
+
+
+class WeatherData(BaseModel):
+    date: str
+    location: Location
+    morning: WeatherPeriod
+    midday: WeatherPeriod
+    afternoon: WeatherPeriod
+
+
+class WeatherRequest(BaseModel):
+    lat: float
+    lng: float
+    date: str

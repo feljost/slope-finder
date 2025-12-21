@@ -5,8 +5,11 @@ from slope_finder_backend.constants import ski_resorts
 from slope_finder_backend.services.routing import get_driving_distances_batch
 from slope_finder_backend.services.routing import calculate_air_distance
 from slope_finder_backend.services.snow_report import scrape_snow_reports_batch
+from slope_finder_backend.services.weather import get_weather_data
 from slope_finder_backend.models import Location
 from slope_finder_backend.models import SkiResortsResponse
+from slope_finder_backend.models import WeatherRequest
+from slope_finder_backend.models import WeatherData
 
 app = FastAPI(title="Slope Finder Backend")
 
@@ -75,11 +78,13 @@ def get_ski_resorts_by_distance(
         for r in page_resorts
     ]
     route_infos = get_driving_distances_batch(location.lat, location.lng, destinations)
+    
+    # Step 4: Get snow reports for this page
     snow_reports = scrape_snow_reports_batch(
         [r["resort"]["snowreport_url"] for r in page_resorts]
     )
 
-    # Step 4: Build response with driving distances
+    # Step 4: Build response with driving distances & snow reports
     resorts_with_distance = []
     for i, item in enumerate(page_resorts):
         route_info = route_infos[i]
@@ -104,3 +109,25 @@ def get_ski_resorts_by_distance(
         "has_more": end_idx < len(ski_resorts),
         "resorts": resorts_with_distance,
     }
+
+
+@app.post("/weather")
+def get_weather(request: WeatherRequest) -> WeatherData:
+    """
+    Get weather data for a specific location and date.
+
+    Returns aggregated weather conditions for three periods:
+    - Morning (8-10): Average temp, summed precipitation/snowfall, average cloud cover & visibility
+    - Midday (11-13): Average temp, summed precipitation/snowfall, average cloud cover & visibility
+    - Afternoon (14-17): Average temp, summed precipitation/snowfall, average cloud cover & visibility
+
+    Args:
+        request: WeatherRequest with lat, lng, and date (YYYY-MM-DD format)
+
+    Returns:
+        WeatherData with morning, midday, and afternoon weather periods
+    """
+    try:
+        return get_weather_data(request.lat, request.lng, request.date)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching weather data: {str(e)}")
