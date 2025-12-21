@@ -22,7 +22,7 @@ ski_resorts = [
         "location": {"lat": 46.4436, "lng": 9.8053}, # Coordinates adjusted for Corvatsch base
         "elevation": "1797m - 3303m",
         "snowreport_url": "https://www.skiresort.info/ski-resort/corvatsch-furtschellas/snow-report/",
-        "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Corvatsch_Bergstation.jpg"
+        "image_url": "https://www.skiresort.info/fileadmin/_processed_/16/66/6e/e6/dc1f585f58.jpg"
     },
     {
         "id": "verbier",
