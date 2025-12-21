@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 from fastapi import HTTPException
 
-from slope_check_backend.constants import ski_resorts
-from slope_check_backend.services.routing import get_driving_distances_batch
-from slope_check_backend.services.routing import calculate_air_distance
-from slope_check_backend.services.snow_report import scrape_snow_reports_batch
-from slope_check_backend.models import Location
-from slope_check_backend.models import SkiResortsResponse
+from slope_finder_backend.constants import ski_resorts
+from slope_finder_backend.services.routing import get_driving_distances_batch
+from slope_finder_backend.services.routing import calculate_air_distance
+from slope_finder_backend.services.snow_report import scrape_snow_reports_batch
+from slope_finder_backend.models import Location
+from slope_finder_backend.models import SkiResortsResponse
 
-app = FastAPI(title="Slope Check Backend")
+app = FastAPI(title="Slope Finder Backend")
 
 
 @app.get("/health")

@@ -11,8 +11,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.cargo/env
 
 echo "Cloning repository..."
-git clone https://github.com/feljost/slope-check-backend.git
-cd slope-check-backend
+git clone https://github.com/feljost/slope-finder-backend.git
+cd slope-finder-backend
 
 echo "Creating virtual environment..."
 uv venv
@@ -30,4 +30,4 @@ if [ ! -f .env ]; then
 fi
 
 echo "Starting Uvicorn..."
-uvicorn slope_check_backend.api.main:app --host 0.0.0.0 --port 8000 --env-file .env
+uvicorn slope_finder_backend.api.main:app --host 0.0.0.0 --port 8000 --env-file .env

@@ -1,7 +1,7 @@
 [project]
-name = "slope-check-backend"
+name = "slope-finder-backend"
 version = "0.1.0"
-description = "A Python package for slope checking"
+description = "A Python package for finding ski slopes"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -19,15 +19,15 @@ authors = [
 
 
 [project.scripts]
-slope-check-backend = "slope_check_backend:main"
+slope-finder-backend = "slope_finder_backend:main"
 
 [project.urls]
-Homepage = "https://github.com/feljost/slope-check-backend"
-Repository = "https://github.com/feljost/slope-check-backend"
+Homepage = "https://github.com/feljost/slope-finder-backend"
+Repository = "https://github.com/feljost/slope-finder-backend"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/slope_check_backend"]
+packages = ["src/slope_finder_backend"]
