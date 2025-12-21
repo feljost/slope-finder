@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from slope_finder_backend.constants import ski_resorts
 from slope_finder_backend.services.routing import calculate_air_distance
@@ -11,6 +12,15 @@ from slope_finder_backend.models import WeatherRequest
 from slope_finder_backend.models import WeatherData
 
 app = FastAPI(title="Slope Finder Backend")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
@@ -38,7 +48,8 @@ def get_ski_resorts_by_distance(
     Supports infinite scrolling by incrementing the page parameter.
 
     Args:
-        location: User's location (lat, lng)
+        lat: User's latitude
+        lng: User's longitude
         page: Page number (default: 1)
         page_size: Number of resorts per page (max: 10)
         date: Optional date for weather data in YYYY-MM-DD format
