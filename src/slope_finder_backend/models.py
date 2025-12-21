@@ -9,29 +9,8 @@ class Location(BaseModel):
 class SnowReport(BaseModel):
     pistes_km: str
     lifts: str
-    snow_cm: str
+    snow_depth_cm: str
     updated_on: str
-
-
-class SkiResort(BaseModel):
-    id: str
-    name: str
-    location: Location
-    elevation: str
-    snowreport_url: str
-    air_distance_km: float
-    distance_km: float
-    duration_minutes: float
-    snow_report: SnowReport
-
-
-class SkiResortsResponse(BaseModel):
-    user_location: Location
-    page: int
-    page_size: int
-    total_resorts: int
-    has_more: bool
-    resorts: list[SkiResort]
 
 
 class WeatherPeriod(BaseModel):
@@ -44,14 +23,35 @@ class WeatherPeriod(BaseModel):
 
 
 class WeatherData(BaseModel):
-    date: str
-    location: Location
+    snowfall_prev_24h_cm: float
     morning: WeatherPeriod
     midday: WeatherPeriod
     afternoon: WeatherPeriod
+    
 
 
 class WeatherRequest(BaseModel):
     lat: float
     lng: float
     date: str
+
+
+class SkiResort(BaseModel):
+    id: str
+    name: str
+    location: Location
+    elevation: str
+    snowreport_url: str
+    air_distance_km: float
+    distance_km: float
+    duration_minutes: float
+    snow_report: SnowReport
+    weather: WeatherData
+
+
+class SkiResortsResponse(BaseModel):
+    page: int
+    page_size: int
+    total_resorts: int
+    has_more: bool
+    resorts: list[SkiResort]

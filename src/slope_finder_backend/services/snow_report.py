@@ -33,7 +33,7 @@ def scrape_snow_report(url: str) -> dict:
             elif item.find("i", class_=lambda x: x and "lift-icon" in x):
                 data["lifts"] = text
             elif item.find("i", class_="fa fa-snowflake-o"):
-                data["snow_cm"] = text
+                data["snow_depth_cm"] = text
 
     update_wrapper = soup.find("div", class_="update-wrapper")
     if update_wrapper:
