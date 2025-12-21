@@ -3,8 +3,9 @@ from fastapi import HTTPException
 
 from slope_check_backend.constants import ski_resorts
 from slope_check_backend.models import LocationQuery
-from slope_check_backend.routing import get_driving_distances_batch
-from slope_check_backend.utils import calculate_air_distance
+from slope_check_backend.services.routing import get_driving_distances_batch
+from slope_check_backend.services.routing import calculate_air_distance
+from slope_check_backend.services.snow_report import scrape_snow_reports_batch
 
 app = FastAPI(title="Slope Check Backend")
 
@@ -36,7 +37,7 @@ def get_ski_resorts_by_distance(
         )
 
     # Step 1: Calculate air distance for all resorts and sort
-    resorts_with_air_distance = []
+    resorts_with_metadata = []
     for resort in ski_resorts:
         air_distance = calculate_air_distance(
             location.lat,
@@ -44,17 +45,15 @@ def get_ski_resorts_by_distance(
             resort["location"]["lat"],
             resort["location"]["lng"],
         )
-        resorts_with_air_distance.append(
-            {"resort": resort, "air_distance_km": air_distance}
-        )
+        resorts_with_metadata.append({"resort": resort, "air_distance_km": air_distance})
 
     # Sort by air distance
-    resorts_with_air_distance.sort(key=lambda x: x["air_distance_km"])
+    resorts_with_metadata.sort(key=lambda x: x["air_distance_km"])
 
     # Step 2: Paginate - get the resorts for the requested page
     start_idx = (page - 1) * page_size
     end_idx = start_idx + page_size
-    page_resorts = resorts_with_air_distance[start_idx:end_idx]
+    page_resorts = resorts_with_metadata[start_idx:end_idx]
 
     # If no resorts on this page, return empty
     if not page_resorts:
@@ -73,6 +72,9 @@ def get_ski_resorts_by_distance(
         for r in page_resorts
     ]
     route_infos = get_driving_distances_batch(location.lat, location.lng, destinations)
+    snow_reports = scrape_snow_reports_batch(
+        [r["resort"]["snowreport_url"] for r in page_resorts]
+    )
 
     # Step 4: Build response with driving distances
     resorts_with_distance = []
@@ -85,6 +87,7 @@ def get_ski_resorts_by_distance(
                     "air_distance_km": round(item["air_distance_km"], 2),
                     "distance_km": route_info["distance_km"],
                     "duration_minutes": route_info["duration_minutes"],
+                    "snow_report": snow_reports[item["resort"]["snowreport_url"]]["data"],
                 }
             )
 
