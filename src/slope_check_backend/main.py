@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
+from fastapi import HTTPException
 
 from slope_check_backend.constants import ski_resorts
 from slope_check_backend.models import LocationQuery
@@ -29,6 +30,12 @@ def get_ski_resorts_by_distance(
 
     Supports infinite scrolling by incrementing the page parameter.
     """
+    if page < 1 or page_size > 10:
+        return HTTPException(
+            status_code=422,
+            detail="page_size must be <= 10 and page must be >= 1"
+            )
+
     # Step 1: Calculate air distance for all resorts and sort
     resorts_with_air_distance = []
     for resort in ski_resorts:
