@@ -82,8 +82,8 @@ def enrich_resorts_with_info(
                     route_info["driving"]["distance_km"] if route_info["driving"] 
                     else round(item["air_distance_km"], 2)
                     ),
-                "duration_driving_minutes": route_info["driving"].get("duration_minutes", -1),
-                "duration_transit_minutes": route_info["transit"].get("duration_minutes", -1),
+                "duration_driving_minutes": route_info.get("driving", {"duration_minutes": -1})["duration_minutes"],
+                "duration_transit_minutes": route_info.get("transit", {"duration_minutes": -1})["duration_minutes"],
                 "snow_report": snow_reports[item["resort"]["snowreport_url"]]["data"],
             }
             # Add weather data if available
