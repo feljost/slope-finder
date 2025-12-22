@@ -148,8 +148,14 @@ def get_routes_batch_google(
         for dest in destinations
     ]
 
-    # Initialize results with None for each destination
-    results = [{"driving": None, "transit": None} for _ in destinations]
+    # Initialize results with None values for each destination
+    results = [
+        {
+            "driving": {"distance_km": None, "duration_minutes": None},
+            "transit": {"distance_km": None, "duration_minutes": None}
+        }
+        for _ in destinations
+    ]
 
     def fetch_routes(travel_mode: str):
         """
@@ -199,10 +205,8 @@ def get_routes_batch_google(
             if distance_meters is not None and duration_str is not None:
                 # Parse duration string (format: "123s")
                 duration_seconds = float(duration_str.rstrip("s"))
-                results[dest_index]["driving"] = {
-                    "distance_km": round(distance_meters / 1000, 2),
-                    "duration_minutes": round(duration_seconds / 60, 1),
-                }
+                results[dest_index]["driving"]["distance_km"] = round(distance_meters / 1000, 2)
+                results[dest_index]["driving"]["duration_minutes"] = round(duration_seconds / 60, 1)
 
     # Process transit routes
     for data in transit_data_list:
@@ -215,15 +219,16 @@ def get_routes_batch_google(
             if distance_meters is not None and duration_str is not None:
                 # Parse duration string (format: "123s")
                 duration_seconds = float(duration_str.rstrip("s"))
-                results[dest_index]["transit"] = {
-                    "distance_km": round(distance_meters / 1000, 2),
-                    "duration_minutes": round(duration_seconds / 60, 1),
-                }
+                results[dest_index]["transit"]["distance_km"] = round(distance_meters / 1000, 2)
+                results[dest_index]["transit"]["duration_minutes"] = round(duration_seconds / 60, 1)
 
     # Convert to None if both modes failed for a destination
     final_results = []
     for result in results:
-        if result["driving"] is None and result["transit"] is None:
+        driving_failed = result["driving"]["distance_km"] is None
+        transit_failed = result["transit"]["distance_km"] is None
+
+        if driving_failed and transit_failed:
             final_results.append(None)
         else:
             final_results.append(result)
