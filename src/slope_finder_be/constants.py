@@ -313,7 +313,7 @@ ski_resorts = [
     {
         "id": "stoos",
         "name": "Stoos",
-        "location": {"lat": 46.99228009923695, "lng": 8.673955692947027},
+        "location": {"lat": 46.99190148739034, "lng": 8.67371214316634},
         "elevation": "1305m - 1935m",
         "snowreport_url": "https://www.skiresort.info/ski-resort/stoos-fronalpstockklingenstock/snow-report/",
         "image_url": "https://stoos-muotatal.ch/wp-content/uploads/2021/03/1440x960_Standseilbahn-Schwyz-Stoos-Winter.jpg"
