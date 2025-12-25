@@ -451,13 +451,13 @@ ski_resorts = [
         "elevation": "745m - 2700m",
         "snowreport_url": "https://www.skiresort.info/ski-resort/schladming-planai-hochwurzen-hauser-kaibling-reiteralm-4-berge-skischaukel/snow-report/",
     },
-    # {
-    #     "id": "bad-gastein",
-    #     "name": "Bad Gastein / Ski amadé",
-    #     "location": {"lat": 47.1136, "lng": 13.1342},
-    #     "elevation": "1083m - 2686m",
-    #     "snowreport_url": "https://www.skiresort.info/ski-resort/sportgastein-ski-amade/snow-report/",
-    # },
+    {
+        "id": "bad-gastein",
+        "name": "Bad Gastein / Ski amadé",
+        "location": {"lat": 47.16801307826339, "lng": 13.098433520559468},
+        "elevation": "1083m - 2686m",
+        "snowreport_url": "https://www.skiresort.info/ski-resort/bad-gastein-bad-hofgastein-schlossalm-angertal-stubnerkoge/snow-report/",
+    },
     # {
     #     "id": "zell-am-see-kaprun",
     #     "name": "Zell am See - Kaprun",
