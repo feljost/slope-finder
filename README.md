@@ -1,5 +1,19 @@
-# Slope Finder Backend
+<div align="center">
 
+# Slope Finder (Backend)
+
+**Find the perfect ski resort based on your location and travel dates**
+
+[![Website](https://img.shields.io/badge/Website-slopefinder.ch-blue?style=for-the-badge)](https://slopefinder.ch)
+[![Frontend](https://img.shields.io/badge/Backend-Repository-green?style=for-the-badge&logo=github)](https://github.com/feljost/slope-finder-fe)
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/uv-DE5FE9?style=flat-square&logo=uv&logoColor=white)](https://docs.astral.sh/uv/)
+
+</div>
+
+---
 FastAPI backend for finding and ranking Swiss ski resorts based on location.
 
 ## Features
