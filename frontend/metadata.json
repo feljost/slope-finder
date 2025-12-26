@@ -1,0 +1,7 @@
+{
+  "name": "Slope Finder",
+  "description": "Find the perfect ski resort based on your location and weather forecasts. Compare driving times, snow reports, and lift status instantly.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
