@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build argument with default value for production
-ENV VITE_API_BASE_URL=https://slope-finder-be-588233937808.europe-west1.run.app
+ENV VITE_API_BASE_URL=https://slopefinder-be-588233937808.europe-west1.run.app
 
 # Build the application
 RUN npm run build
