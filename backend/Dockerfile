@@ -6,6 +6,8 @@ WORKDIR /app
 
 # Copy the files
 # COPY . .
+RUN pwd && ls -R && exit 1
+
 COPY /backend .
 
 RUN uv pip install --system -e .
