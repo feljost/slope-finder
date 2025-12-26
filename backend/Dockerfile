@@ -4,8 +4,11 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 # Set working directory
 WORKDIR /app
 
-# Copy the files
+# Assuming it is built from the backend directory, not project root
 COPY . .
+
+# debug, can be deleted later
+RUN pwd && ls -R
 
 RUN uv pip install --system -e .
 
