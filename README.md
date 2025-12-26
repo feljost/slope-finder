@@ -31,6 +31,11 @@ Simply enter your location and date, and the application provides a ranked list 
 * **Responsive UI:** Infinite scrolling lists and mobile-optimized design.
 * **Search & Filter:** Filter resorts by availability and travel dates.
 
+## Mobile Demo
+
+<div align="center">
+  <video src=".github/assets/demo-mobile.mp4" controls width="300"></video>
+</div>
 
 ## 🛠️ Architecture & Tech Stack
 
