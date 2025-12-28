@@ -29,3 +29,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/slope_finder_be"]
+
+[project.scripts]
+dev = "slope_finder_be.api.main:start_server"

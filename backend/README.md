@@ -50,7 +50,16 @@ Next, you can run the backend with `uv`
 ```shell
 uv venv
 uv pip install -e .
+```
+Then start the server with uv:
+```bash
+uv run dev
+```
+Or with uvicorn:
+
+``` 
 uvicorn slope_finder_be.api.main:app
 ```
+
 
 If you want to deploy it, you may use the `Dockerfile`. It is currently setup for Google Cloud Run.

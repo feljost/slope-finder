@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import uvicorn
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -109,3 +110,8 @@ def get_ski_resorts_by_distance(
         "has_more": end_idx < total_filtered,
         "resorts": resorts_with_metadata,
     }
+
+
+def start_server():
+    """Needed for the script entry point in pyproject.toml"""
+    uvicorn.run("slope_finder_be.api.main:app", reload=True)
