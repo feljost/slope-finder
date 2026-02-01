@@ -49,9 +49,9 @@ const App: React.FC = () => {
     wakeUpBackend();
   }, []);
 
-  // Scroll to results when new search completes
+  // Scroll to results when new search completes (once at least 3 cards loaded)
   useEffect(() => {
-    if (shouldScrollToResults && resorts.length > 0 && resultsRef.current) {
+    if (shouldScrollToResults && resorts.length >= 3 && resultsRef.current) {
       // Small delay to ensure content is rendered
       setTimeout(() => {
         const element = resultsRef.current;
