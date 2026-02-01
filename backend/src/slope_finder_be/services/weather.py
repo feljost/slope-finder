@@ -110,7 +110,7 @@ def get_weather_data_batch(
         except Exception:
             return (name, None)
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         results = list(executor.map(fetch_single, locations))
 
     return dict(results)
