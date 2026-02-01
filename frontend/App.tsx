@@ -175,6 +175,8 @@ const App: React.FC = () => {
     // or we can rely on the logic inside loadResorts to handle it.
     // Ideally, we'd clear userLocation if the input text changed, but that adds complexity.
     // For now, loadResorts handles the fallback to geocode if needed.
+    setResorts([]); // Clear old cards immediately
+    setPage(1);
     setShouldScrollToResults(true);
     loadResorts(true);
   };
