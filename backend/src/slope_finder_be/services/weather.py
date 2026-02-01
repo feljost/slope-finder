@@ -1,5 +1,6 @@
 import os
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
@@ -19,9 +20,37 @@ def get_weather_data(lat: float, lng: float, date: datetime) -> WeatherData:
     target_date = date.date()
     previous_date = target_date - timedelta(days=1)
 
-    # Fetch both history (past hours) and forecast (future hours)
-    forecast = _fetch_google_weather("forecast", lat, lng, 168)
-    history = _fetch_google_weather("history", lat, lng, 24)
+    now = datetime.now()
+
+    # IMPORTANT: The Google Weather API does not support querying by date range.
+    # The hourly endpoints only accept a `hours` parameter that fetches N hours
+    # from "now" (forward for forecast, backward for history). There is no way to
+    # request "give me weather for Thursday" directly. So we must:
+    # 1. Calculate how many hours from now until the data we need
+    # 2. Request that many hours
+    # 3. Filter the response to extract the specific hours we care about
+    #
+    # Calculate the time range we actually need:
+    # - Previous day 00:00 (for 24h snowfall)
+    # - Target day up to 17:00 (to cover afternoon period ending at 16:xx)
+    start_needed = datetime.combine(previous_date, datetime.min.time())
+    end_needed = datetime.combine(target_date, datetime.min.time().replace(hour=17))
+
+    # Calculate how many hours of history and forecast we need
+    history_hours = 0
+    forecast_hours = 0
+
+    if start_needed < now:
+        # Some of the needed data is in the past (Google Weather API history limit is 24 hours)
+        history_hours = min(int((now - start_needed).total_seconds() / 3600) + 1, 24)
+
+    if end_needed > now:
+        # Some of the needed data is in the future
+        forecast_hours = min(int((end_needed - now).total_seconds() / 3600) + 1, 168)
+
+    # Fetch only the hours we need
+    forecast = _fetch_google_weather("forecast", lat, lng, forecast_hours) if forecast_hours > 0 else []
+    history = _fetch_google_weather("history", lat, lng, history_hours) if history_hours > 0 else []
 
     # Combine all hours for easier filtering
     all_hours = history + forecast
@@ -54,6 +83,33 @@ def get_weather_data(lat: float, lng: float, date: datetime) -> WeatherData:
         midday=_create_period(midday, "midday"),
         afternoon=_create_period(afternoon, "afternoon"),
     )
+
+
+def get_weather_data_batch(
+    locations: list[dict], date: datetime
+) -> dict[str, WeatherData | None]:
+    """
+    Get weather data for multiple locations in parallel.
+
+    Args:
+        locations: List of dicts with 'name', 'lat', 'lng' keys
+        date: Target datetime for weather data
+
+    Returns:
+        Dict mapping location name to WeatherData (or None if fetch failed)
+    """
+    def fetch_single(location: dict) -> tuple[str, WeatherData | None]:
+        name = location["name"]
+        try:
+            weather = get_weather_data(location["lat"], location["lng"], date)
+            return (name, weather)
+        except Exception:
+            return (name, None)
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        results = list(executor.map(fetch_single, locations))
+
+    return dict(results)
 
 
 def _fetch_google_weather(endpoint: str, lat: float, lng: float, hours: int) -> list[dict]:
