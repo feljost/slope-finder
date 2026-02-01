@@ -16,7 +16,7 @@ export const fetchResorts = async (
   lng: number,
   date: string,
   page: number = 1,
-  pageSize: number = 5
+  pageSize: number = 15
 ): Promise<ResortsResponse> => {
   const url = new URL(RESORTS_URL);
   url.searchParams.append('lat', lat.toString());
