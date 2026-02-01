@@ -43,7 +43,7 @@ Returns paginated ski resorts sorted by distance.
 
 ## Usage
 
-Set your GOOGLE_ROUTES_API_KEY in the .env file.
+Set your GOOGLE_API_KEY in the .env file.
 
 Next, you can run the backend with `uv`
 
