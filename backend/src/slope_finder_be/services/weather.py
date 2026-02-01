@@ -1,110 +1,106 @@
+import os
 import requests
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-from slope_finder_be.models import WeatherData, WeatherPeriod, Location
+from dotenv import load_dotenv
+from slope_finder_be.models import WeatherData, WeatherPeriod
+
+load_dotenv()
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_WEATHER_BASE_URL = "https://weather.googleapis.com/v1"
 
 
 def get_weather_data(lat: float, lng: float, date: datetime) -> WeatherData:
-    """
-    Get weather data for a specific location and date from Open-Meteo API.
+    """Get weather data for a specific location and date from Google Weather API."""
+    if not GOOGLE_API_KEY:
+        raise ValueError("GOOGLE_API_KEY not set in environment variables")
 
-    Args:
-        lat: Latitude of the location
-        lng: Longitude of the location
-        date: Datetime object for the target date
-
-    Returns:
-        WeatherData object with morning, midday, and afternoon weather periods,
-        plus total snowfall from the previous 24 hours
-    """
-    url = "https://api.open-meteo.com/v1/forecast"
-
-    # Calculate previous day to get 24h snowfall data
     target_date = date.date()
-    previous_day = target_date - timedelta(days=1)
+    previous_date = target_date - timedelta(days=1)
 
-    params = {
-        "latitude": lat,
-        "longitude": lng,
-        "start_date": previous_day.isoformat(),
-        "end_date": target_date.isoformat(),
-        "hourly": [
-            "temperature_2m",
-            "precipitation",
-            "snowfall",
-            "cloud_cover",
-            "visibility"
-        ],
-        "timezone": "auto"
-    }
+    # Fetch both history (past hours) and forecast (future hours)
+    forecast = _fetch_google_weather("forecast", lat, lng, 168)
+    history = _fetch_google_weather("history", lat, lng, 24)
 
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    data = response.json()
+    # Combine all hours for easier filtering
+    all_hours = history + forecast
 
-    hourly = data.get("hourly", {})
-    times = hourly.get("time", [])
-    temperatures = hourly.get("temperature_2m", [])
-    precipitation = hourly.get("precipitation", [])
-    snowfall = hourly.get("snowfall", [])
-    cloud_cover = hourly.get("cloud_cover", [])
-    visibility = hourly.get("visibility", [])
+    # Group hours by time period for target date (using local time)
+    morning, midday, afternoon = [], [], []
+    snowfall_prev_day = 0.0
 
-    # Collect indices for time ranges
-    # Morning: 8-10, Midday: 11-13, Afternoon: 14-17
-    morning_indices = []
-    midday_indices = []
-    afternoon_indices = []
-    previous_day_indices = []
+    for h in all_hours:
+        display = h.get("displayDateTime", {})
+        h_date = (display.get("year"), display.get("month"), display.get("day"))
+        hour = display.get("hours", 0)
 
-    for i, time_str in enumerate(times):
-        time_obj = datetime.fromisoformat(time_str)
-        hour = time_obj.hour
-
-        # Collect indices for the previous day (for 24h snowfall calculation)
-        if time_obj.date() == previous_day:
-            previous_day_indices.append(i)
-
-        # Only collect period indices for the target date
-        if time_obj.date() == target_date:
+        # Collect hours for target date weather periods
+        if h_date == (target_date.year, target_date.month, target_date.day):
             if 8 <= hour <= 10:
-                morning_indices.append(i)
+                morning.append(h)
             elif 11 <= hour <= 13:
-                midday_indices.append(i)
+                midday.append(h)
             elif 14 <= hour <= 16:
-                afternoon_indices.append(i)
+                afternoon.append(h)
 
-    def create_period(indices: list[int], period_name: str) -> WeatherPeriod:
-        """Helper to create a WeatherPeriod by aggregating data across multiple hours."""
-        if not indices:
-            raise ValueError(f"No data available for {period_name}")
-
-        # Calculate averages for temperature, cloud_cover, and visibility
-        avg_temp = sum(temperatures[i] for i in indices) / len(indices)
-        avg_cloud = sum(cloud_cover[i] for i in indices) / len(indices)
-        avg_visibility = sum(visibility[i] for i in indices) / len(indices)
-
-        # Calculate sums for precipitation and snowfall
-        total_precip = sum(precipitation[i] for i in indices)
-        total_snow = sum(snowfall[i] for i in indices)
-
-        # Use the first time in the range as the period time
-        return WeatherPeriod(
-            time=times[indices[0]],
-            temperature_celsius=round(avg_temp, 1),
-            precipitation_mm=round(total_precip, 1),
-            snowfall_cm=round(total_snow, 1),
-            cloud_cover_percent=int(avg_cloud),
-            visibility_m=round(avg_visibility, 0)
-        )
-
-    # Calculate 24h snowfall from the previous day
-    snowfall_24h = sum(snowfall[i] for i in previous_day_indices) if previous_day_indices else 0.0
+        # Sum snowfall from previous day (24h before target date)
+        if h_date == (previous_date.year, previous_date.month, previous_date.day):
+            snowfall_prev_day += _get_snowfall_cm(h)
 
     return WeatherData(
-        snowfall_prev_24h_cm=round(snowfall_24h, 1),
-        morning=create_period(morning_indices, "morning (8-10)"),
-        midday=create_period(midday_indices, "midday (11-13)"),
-        afternoon=create_period(afternoon_indices, "afternoon (14-17)"),
+        snowfall_prev_24h_cm=round(snowfall_prev_day, 1),
+        morning=_create_period(morning, "morning"),
+        midday=_create_period(midday, "midday"),
+        afternoon=_create_period(afternoon, "afternoon"),
+    )
+
+
+def _fetch_google_weather(endpoint: str, lat: float, lng: float, hours: int) -> list[dict]:
+    """Fetch data from Google Weather API with pagination. Endpoint is 'forecast' or 'history'."""
+    url = f"{GOOGLE_WEATHER_BASE_URL}/{endpoint}/hours:lookup"
+    hours_key = f"{endpoint}Hours"  # forecastHours or historyHours
+    params = {"key": GOOGLE_API_KEY, "location.latitude": lat, "location.longitude": lng, "hours": hours}
+    all_hours = []
+
+    while len(all_hours) < hours:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        all_hours.extend(data.get(hours_key, []))
+        if "nextPageToken" not in data:
+            break
+        params["pageToken"] = data["nextPageToken"]
+
+    return all_hours
+
+
+def _get_snowfall_cm(h: dict) -> float:
+    """Extract snowfall in cm from hour data using snowQpf field."""
+    precip = h.get("precipitation", {})
+    snow_qpf_mm = precip.get("snowQpf", {}).get("quantity", 0)
+    return snow_qpf_mm / 10  # Convert mm to cm
+
+
+def _create_period(hours: list[dict], period_name: str) -> WeatherPeriod:
+    """Create a WeatherPeriod by aggregating data across multiple hours."""
+    if not hours:
+        raise ValueError(f"No data available for {period_name}")
+
+    temps = [h.get("temperature", {}).get("degrees") for h in hours]
+    clouds = [h.get("cloudCover") for h in hours]
+    vis = [h.get("visibility", {}).get("distance") for h in hours]
+    precip = [h.get("precipitation", {}).get("qpf", {}).get("quantity", 0) for h in hours]
+
+    temps = [t for t in temps if t is not None]
+    clouds = [c for c in clouds if c is not None]
+    vis = [v for v in vis if v is not None]
+
+    return WeatherPeriod(
+        time=hours[0].get("interval", {}).get("startTime", ""),
+        temperature_celsius=round(sum(temps) / len(temps), 1) if temps else None,
+        precipitation_mm=round(sum(precip), 1),
+        snowfall_cm=round(sum(_get_snowfall_cm(h) for h in hours), 1),
+        cloud_cover_percent=int(sum(clouds) / len(clouds)) if clouds else None,
+        visibility_m=round(sum(vis) / len(vis) * 1000, 0) if vis else None,  # km to m
     )
