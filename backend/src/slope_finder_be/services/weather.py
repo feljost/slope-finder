@@ -48,9 +48,13 @@ def get_weather_data(lat: float, lng: float, date: datetime) -> WeatherData:
         # Some of the needed data is in the future
         forecast_hours = min(int((end_needed - now).total_seconds() / 3600) + 1, 168)
 
-    # Fetch only the hours we need
-    forecast = _fetch_google_weather("forecast", lat, lng, forecast_hours) if forecast_hours > 0 else []
-    history = _fetch_google_weather("history", lat, lng, history_hours) if history_hours > 0 else []
+    # weather data
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        forecast_future = executor.submit(_fetch_google_weather, "forecast", lat, lng, forecast_hours) if forecast_hours > 0 else None
+        history_future = executor.submit(_fetch_google_weather, "history", lat, lng, history_hours) if history_hours > 0 else None
+        
+        forecast = forecast_future.result() if forecast_future else []
+        history = history_future.result() if history_future else []
 
     # Combine all hours for easier filtering
     all_hours = history + forecast
