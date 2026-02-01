@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
-GOOGLE_ROUTES_API_KEY = os.getenv("GOOGLE_ROUTES_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 
 def calculate_air_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -128,13 +128,13 @@ def get_routes_batch_google(
         }
         If a mode is not available, the values will be None.
     """
-    if not GOOGLE_ROUTES_API_KEY:
-        raise ValueError("GOOGLE_ROUTES_API_KEY not set in environment variables")
+    if not GOOGLE_API_KEY:
+        raise ValueError("GOOGLE_API_KEY not set in environment variables")
 
     url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
     headers = {
         "Content-Type": "application/json",
-        "X-Goog-Api-Key": GOOGLE_ROUTES_API_KEY,
+        "X-Goog-Api-Key": GOOGLE_API_KEY,
         "X-Goog-FieldMask": "originIndex,destinationIndex,distanceMeters,duration,condition",
     }
 

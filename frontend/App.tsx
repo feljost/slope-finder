@@ -49,9 +49,9 @@ const App: React.FC = () => {
     wakeUpBackend();
   }, []);
 
-  // Scroll to results when new search completes
+  // Scroll to results when new search completes (once at least 3 cards loaded)
   useEffect(() => {
-    if (shouldScrollToResults && resorts.length > 0 && resultsRef.current) {
+    if (shouldScrollToResults && resorts.length >= 3 && resultsRef.current) {
       // Small delay to ensure content is rendered
       setTimeout(() => {
         const element = resultsRef.current;
@@ -175,6 +175,8 @@ const App: React.FC = () => {
     // or we can rely on the logic inside loadResorts to handle it.
     // Ideally, we'd clear userLocation if the input text changed, but that adds complexity.
     // For now, loadResorts handles the fallback to geocode if needed.
+    setResorts([]); // Clear old cards immediately
+    setPage(1);
     setShouldScrollToResults(true);
     loadResorts(true);
   };

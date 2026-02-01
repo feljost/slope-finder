@@ -58,9 +58,9 @@ def get_ski_resorts_by_distance(
         page_size: Number of resorts per page (max: 10)
         date: Date for weather data in YYYY-MM-DD format
     """
-    if page < 1 or page_size > 10:
+    if page < 1 or page_size > 20:
         return HTTPException(
-            status_code=422, detail="page_size must be <= 10 and page must be >= 1"
+            status_code=422, detail="page_size must be <= 20 and page must be >= 1"
         )
 
     # Parse date string to datetime object

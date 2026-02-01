@@ -1,10 +1,11 @@
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from slope_finder_be.models import Location
 from slope_finder_be.services.routing import get_routes_batch_google
 from slope_finder_be.services.snow_report import scrape_snow_reports_batch
-from slope_finder_be.services.weather import get_weather_data
+from slope_finder_be.services.weather import get_weather_data_batch
 
 
 def enrich_resorts_with_info(
@@ -39,28 +40,40 @@ def enrich_resorts_with_info(
     ]
 
     def fetch_driving_distances():
+        start = time.time()
         # Use the date to create a departure time (8:00 AM on the target date)
         departure_time = date.replace(hour=8, minute=0, second=0, microsecond=0)
-        return get_routes_batch_google(lat, lng, destinations, departure_time)
+        result = get_routes_batch_google(lat, lng, destinations, departure_time)
+        print(f"[PROFILE] fetch_driving_distances: {time.time() - start:.2f}s")
+        return result
 
     def fetch_weather_data():
-        weather_data = {}
-        for item in page_resorts:
-            resort_lat = item["resort"]["location"]["lat"]
-            resort_lng = item["resort"]["location"]["lng"]
-            try:
-                weather = get_weather_data(resort_lat, resort_lng, date)
-                weather_data[item["resort"]["name"]] = weather.dict()
-            except Exception:
-                weather_data[item["resort"]["name"]] = None
-        return weather_data
+        start = time.time()
+        locations = [
+            {
+                "name": item["resort"]["name"],
+                "lat": item["resort"]["location"]["lat"],
+                "lng": item["resort"]["location"]["lng"],
+            }
+            for item in page_resorts
+        ]
+        weather_results = get_weather_data_batch(locations, date)
+        print(f"[PROFILE] fetch_weather_data: {time.time() - start:.2f}s")
+        return {
+            name: weather.dict() if weather else None
+            for name, weather in weather_results.items()
+        }
 
     def fetch_snow_reports():
-        return scrape_snow_reports_batch(
+        start = time.time()
+        result = scrape_snow_reports_batch(
             [r["resort"]["snowreport_url"] for r in page_resorts]
         )
+        print(f"[PROFILE] fetch_snow_reports: {time.time() - start:.2f}s")
+        return result
 
     # Execute all data fetching in parallel
+    overall_start = time.time()
     with ThreadPoolExecutor(max_workers=3) as executor:
         driving_future = executor.submit(fetch_driving_distances)
         weather_future = executor.submit(fetch_weather_data)
@@ -69,6 +82,7 @@ def enrich_resorts_with_info(
         route_infos = driving_future.result()
         weather_data = weather_future.result()
         snow_reports = snow_reports_future.result()
+    print(f"[PROFILE] Total parallel fetch: {time.time() - overall_start:.2f}s")
 
     # Build enriched resort data
     enriched_resorts = []
@@ -89,9 +103,10 @@ def enrich_resorts_with_info(
                 "maps_directions_url_transit": route_info["transit"]["maps_directions_url"],
                 "snow_report": snow_reports[item["resort"]["snowreport_url"]]["data"],
             }
-            # Add weather data if available
-            if item["resort"]["name"] in weather_data:
-                resort_data["weather"] = weather_data[item["resort"]["name"]]
+            # Add weather data if available and not None
+            weather = weather_data.get(item["resort"]["name"])
+            if weather is not None:
+                resort_data["weather"] = weather
 
             enriched_resorts.append(resort_data)
 
